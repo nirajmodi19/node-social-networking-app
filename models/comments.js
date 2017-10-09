@@ -6,7 +6,7 @@ var postCommentSchema = new mongoose.Schema({
 		id: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User'
-		}
+		},
 		username: String
 	},
 	posted_to: String,
@@ -14,4 +14,4 @@ var postCommentSchema = new mongoose.Schema({
 	removed: Boolean,
 });
 
-module.exports = mongoose.model('post_comment', postCommentSchema);
+module.exports = mongoose.model('comment', postCommentSchema);

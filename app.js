@@ -10,7 +10,8 @@ mongoose.connect('mongodb://localhost/Social', {useMongoClient: true});
 
 const User 			= require('./models/user.js');
 const UserDetail 	= require('./models/userDetails.js');
-const Post 			= require('./models/posts.js')
+const Post 			= require('./models/posts.js');
+const Comment   	= require('./models/comments.js');
 
 var port 			= process.env.PORT || 3000
 var app 			= express();
@@ -103,6 +104,7 @@ app.get('/home', isLoggedIn, (req, res) => {
 				console.log(err);
 			} else {
 				//res.locals.userDetail = newUser;
+				//console.log(newUser);
 				res.render('home/home', {newUser});
 			}
 		});
@@ -112,13 +114,13 @@ app.get('/home', isLoggedIn, (req, res) => {
 app.post('/home', isLoggedIn, (req, res) => {
 	if(req.body.post_text) {
 		var body = req.body.post_text;
-		//var added_by = {id: req.user._id, username: req.user.username};
+		var added_by = {id: req.user._id, username: req.user.username};
 		var user_to = '';
 		var user_closed = 0;
 		var deleted = 0;
 		var likes = 0;
 
-		var newPost = {body, user_to, user_closed, deleted, likes};
+		var newPost = {body, added_by, user_to, user_closed, deleted, likes};
 
 		Post.create(newPost, (err, data) => {
 			if(err) {
@@ -137,11 +139,68 @@ app.post('/home', isLoggedIn, (req, res) => {
 				});	
 			}
 		});
-	}	
+	}
+	console.log('Post cannot be empty');
+	res.redirect('/home');	
 });
 
 //@@@@@@@@@@@@@@@@@@@@@@@@
-//Abhi naam decide nahi hua hai ;-)
+//Comment Routes
+//@@@@@@@@@@@@@@@@@@@@@@@@
+
+app.get('/comments/:id', isLoggedIn, (req, res) => {
+	var post_id = req.params.id;
+	Post.findOne({'_id': post_id}).populate("comments").exec((err, returnedPost) => {
+		if(err) {
+			console.log(err);
+		} else {
+			res.render('comments/comments', {returnedPost});
+		}
+	});
+});
+
+app.post('/comments/:id', isLoggedIn, (req, res) => {
+	var post_id = req.params.id;
+	if(req.body.post_body){
+		var post_body = req.body.post_body;
+		var posted_by = {id: req.user._id, username: req.user.username};
+		// Post.findById(post_id, (err, foundPost) => {
+		// 	if(err) {
+		// 		console.log(err);
+		// 	} else {
+		// 		console.log(foundPost);
+		// 		var posted_to = foundPost.added_by.username;
+		// 	}
+		// });
+		var posted_to = 'none';
+		var removed = 0;
+		var newPost = {post_body, posted_by, posted_to, removed};
+
+		Comment.create(newPost, (err, data) => {
+			if(err) {
+				console.log(err);
+			} else {
+				Post.findOne({'_id': post_id}).populate("comments").exec((err, returnedPost) => {
+					if(err) {
+						console.log(err);
+					} else {
+						console.log(returnedPost);
+						id = new ObjectId(data._id);
+						returnedPost.comments.push(id);
+						returnedPost.save();
+						res.render('comments/comments', {returnedPost});
+					}
+				});
+			}
+		});
+	}
+	///res.render('comments/comments');
+});
+
+
+
+//@@@@@@@@@@@@@@@@@@@@@@@@
+//Listening to ports
 //@@@@@@@@@@@@@@@@@@@@@@@@
 
 app.listen(port, () => {

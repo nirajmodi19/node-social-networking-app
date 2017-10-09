@@ -1,6 +1,5 @@
 <% include ../partials/header %>
 
-
 <div class="container">
 	<header class="jumbotron">
 		<div class="container">
@@ -38,7 +37,7 @@
 			<% num_posts = newUser.num_posts; %>
 			<% for(i=0;i<num_posts;i++){ %>
 			<div class="row" style="margin-top: 20px;">
-				<div class="card" style="width: 99%; padding: 10px; background-color: #fff">
+				<div class="card" style="width: 99%; padding: 10px; background-color: #fff" >
 					<div class="card-block">
 						<div class="container">
 							<div class="row">
@@ -51,8 +50,27 @@
 							<div class="row">
 								<h4 class="card-text"><%= posts[i].body %></h4>
 							</div>
+							<div class="row">
+								<h4 class="card-subtitile" onclick="toggle<%= posts[i]._id %>()">Show Comments</h4>
+							</div>
 						</div>
 					</div>
+					<div id='toggleComment<%= posts[i]._id %>' style="display: block;">
+						<iframe src="/comments/<%= posts[i]._id %>" id="comment_iframe"></iframe>
+					</div>
+					<script>
+				function toggle<%= posts[i]._id %>() {
+					var element = document.getElementById('toggleComment<%= posts[i]._id %>');
+
+					if(element.style.display== "block") {
+						console.log(element.style.display);
+						element.style.display == "none";
+					}
+					else{
+						element.style.display == "block";
+					}
+				}
+			</script>
 				</div>
 			</div>
 			<% } %>
